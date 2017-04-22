@@ -1,0 +1,192 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/lazd/gulp-karma">gulp-karma (v0.0.5)</a>
+</h1>
+<h4>Karma plugin for gulp</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.gulp-karma">module gulp-karma</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.gulp-karma.gulp-karma">
+            function <span class="apidocSignatureSpan"></span>gulp-karma
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.gulp-karma" id="apidoc.module.gulp-karma">module gulp-karma</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.gulp-karma.gulp-karma" id="apidoc.element.gulp-karma.gulp-karma">
+        function <span class="apidocSignatureSpan"></span>gulp-karma
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">gulp-karma = function (options) {
+  var child;
+  var stream;
+  var files = [];
+
+  options = extend({
+    action: 'run'
+  }, options);
+
+  var action = options.action;
+
+  // Remove option in case Karma uses it in the future
+  delete options.action;
+
+  if (action === 'watch') {
+    // Never set singleRun in background mode
+    options.singleRun = false;
+
+    // Enable watching
+    options.autoWatch = true;
+  }
+  else if (action === 'run') {
+    // Tell Karma to run once and exit
+    options.singleRun = true;
+
+    // Disable watching
+    options.autoWatch = false;
+  }
+
+  if (options.configFile) {
+    options.configFile = path.resolve(options.configFile);
+  }
+
+  function done(code) {
+    // Stop the server if it's running
+    if (child) {
+      child.kill();
+    }
+
+    // End the stream if it exists
+    if (stream) {
+      if (code) {
+        stream.emit('error', new gutil.PluginError('gulp-karma', 'karma exited with code ' + code));
+      }
+      else {
+        stream.emit('end');
+      }
+    }
+  }
+
+  function startKarmaServer() {
+    gutil.log('Starting Karma server...');
+
+    // Start the server
+    child = spawn(
+      'node',
+      [
+        path.join(__dirname, 'lib', 'background.js'),
+        JSON.stringify(options)
+      ],
+      {
+        stdio: 'inherit'
+      }
+    );
+
+    // Cleanup when the child process exits
+    child.on('exit', function(code) {
+      // gutil.log('Karma child process ended');
+      done(code);
+    });
+  }
+
+  function queueFile(file) {
+    if (file) {
+      // gutil.log('Queueing file '+file.path);
+      files.push(file.path);
+    }
+    else {
+      stream.emit('error', new Error('Got undefined file'));
+    }
+  }
+
+  function endStream() {
+    // Override files if they were piped
+    // This doesn't work with the runner, but works fine with singleRun and autoWatch
+    if (files.length) {
+      options.files = files;
+    }
+
+    // Start the server
+    // If options.singleRun: Server starts, tests run, task completes
+    // If options.background: Server starts, tests run, files watched
+    startKarmaServer();
+  }
+
+  stream = es.through(queueFile, endStream);
+
+  return stream;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
